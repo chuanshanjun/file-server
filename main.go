@@ -7,6 +7,8 @@ import (
 	"github.com/chuanshan/file-server/handler"
 )
 
+// http://hu12340.vip/2020/10/GO-%E6%93%8D%E4%BD%9C%E6%96%87%E4%BB%B6/ go 操作文件
+// https://gobyexample-cn.github.io/
 // https://golang.hotexamples.com/zh/ golang例子网
 // main method
 // 文件上传 POST /file/upload

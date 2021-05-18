@@ -2,10 +2,13 @@ package handler
 
 import (
 	"fmt"
+	"github.com/chuanshan/file-server/meta"
+	"github.com/chuanshan/file-server/util"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 )
 
 // upload file method
@@ -14,7 +17,6 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		data, err := ioutil.ReadFile("./static/view/index.html")
 		if err != nil {
-
 			io.WriteString(w, "internal Server error!")
 		}
 
@@ -30,15 +32,32 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		newFile, err := os.Create("./tmp/" + header.Filename)
+		filemeta := meta.FileMeta{
+			FileName: header.Filename,
+			Location: "./tmp/" + header.Filename,
+			UploadAt: time.Now().Format("2006-01-02 15:04:05"),
+		}
+
+		newFile, err := os.Create(filemeta.Location)
 		if err != nil {
 			fmt.Printf("create file erroe:%s", err.Error())
 		}
 		defer newFile.Close()
 
-		_, err = io.Copy(newFile, file)
+		// 巧妙的使用io.Copy返回的字节数给到对象中
+		filemeta.FileSize, err = io.Copy(newFile, file)
 		if err != nil {
 			fmt.Printf("save file erroe:%s", err.Error())
+		}
+
+		// 上面有io.Copy() 所以将下次文件读的offset设置为0
+		newFile.Seek(0, 0)
+		filemeta.FileSha1 = util.FileSha1(newFile)
+		meta.UpdateFileMeta(filemeta)
+		// sha1操作中有io.Copy() 所以将下次文件读的offset设置为0
+		newFile.Seek(0, 0)
+		if err != nil {
+			fmt.Printf("read file to []byte error:%s", err.Error())
 		}
 
 		// http 302 暂时性转移
