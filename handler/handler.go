@@ -80,7 +80,8 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 	fileMeta := meta.GetFileMeta(value)
 	marshal, err := json.Marshal(fileMeta)
 	if err != nil {
-		fmt.Printf("json.Marshal error:%s\n", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	w.Write(marshal)
@@ -96,7 +97,7 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 	file, err := os.Open(fileMeta.Location)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("download file error%s\n", err.Error())
+		return
 	}
 	defer file.Close()
 
@@ -105,7 +106,7 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Printf("download file error%s\n", err.Error())
+		return
 	}
 
 	// 如果前段是浏览器则要加头让浏览器能识别
@@ -118,4 +119,48 @@ func DownloadHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Disposition", "attachment;filename=\""+fileMeta.FileName+"\"")
 	// 如果前段是app则直接写数据
 	w.Write(data)
+}
+
+func FileMetaUpdateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	r.ParseForm()
+
+	op := r.Form.Get("op")
+	if op != "0" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	filehash := r.Form.Get("filehash")
+	newFileName := r.Form.Get("filename")
+
+	fileMeta := meta.GetFileMeta(filehash)
+	fileMeta.FileName = newFileName
+	meta.UpdateFileMeta(fileMeta)
+
+	marshal, err := json.Marshal(fileMeta)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(marshal)
+}
+
+func DeleteFile(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	filehash := r.Form.Get("filehash")
+	fileMeta := meta.GetFileMeta(filehash)
+	// 1 删除元信息
+	meta.DeleteFile(filehash)
+
+	// 2 删除文件 系统删除可能会失败,此处暂时不考虑
+	os.Remove(fileMeta.Location)
+
+	w.WriteHeader(http.StatusOK)
 }

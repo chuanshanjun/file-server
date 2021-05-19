@@ -22,3 +22,8 @@ func UpdateFileMeta(fmeta FileMeta) {
 func GetFileMeta(fileSha1 string) FileMeta {
 	return fileMetas[fileSha1]
 }
+
+func DeleteFile(filesha1 string) {
+	// 此处只是演练,多线程的时候肯定是线程不安全的
+	delete(fileMetas, filesha1)
+}
