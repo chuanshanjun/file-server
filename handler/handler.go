@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/chuanshan/file-server/meta"
 	"github.com/chuanshan/file-server/util"
@@ -67,4 +68,20 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 
 func UploadSucHandler(w http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "upload file success")
+}
+
+func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
+	// 将参数解析完后放入r.Form
+	r.ParseForm()
+	// map[string][]string map key 为string 值为 string数组 所以 取[0] 拿第一个值
+	// value =  r.Form["filehash"][0]
+	// 个人觉得r.FormValue() 更好用
+	value := r.FormValue("filehash")
+	fileMeta := meta.GetFileMeta(value)
+	marshal, err := json.Marshal(fileMeta)
+	if err != nil {
+		fmt.Printf("json.Marshal error:%s\n", err.Error())
+	}
+
+	w.Write(marshal)
 }
