@@ -85,3 +85,37 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Write(marshal)
 }
+
+func DownloadHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	filehash := r.Form.Get("filehash")
+	fileMeta := meta.GetFileMeta(filehash)
+
+	// 打开文件的时候,文件可能不存在,也可能打开失败
+	file, err := os.Open(fileMeta.Location)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Printf("download file error%s\n", err.Error())
+	}
+	defer file.Close()
+
+	// 通过拿到的文件句柄将文件读入内存(小文件)
+	// 如果文件大的话，我们使用流的方式,每次读一小部分数据给客户端，然后再刷新缓存，继续读取到文件的末尾为止
+	data, err := ioutil.ReadAll(file)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Printf("download file error%s\n", err.Error())
+	}
+
+	// 如果前段是浏览器则要加头让浏览器能识别
+	// https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Basics_of_HTTP/MIME_types
+	// application/octet-stream 表明是某种二进制数据
+	// 这是应用程序文件的默认值。意思是 未知的应用程序文件 ，浏览器一般不会自动执行或询问执行。浏览器会像对待 设置了HTTP头Content-Disposition 值为 attachment 的文件一样来对待这类文件。
+	// 在常规的 HTTP 应答中，Content-Disposition 响应头指示回复的内容该以何种形式展示，是以内联的形式（即网页或者页面的一部分），还是以附件的形式下载并保存到本地。
+	// attachment（意味着消息体应该被下载到本地；大多数浏览器会呈现一个“保存为”的对话框，将 filename 的值预填为下载后的文件名，假如它存在的话）
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", "attachment;filename=\""+fileMeta.FileName+"\"")
+	// 如果前段是app则直接写数据
+	w.Write(data)
+}
