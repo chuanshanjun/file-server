@@ -54,7 +54,8 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		// 上面有io.Copy() 所以将下次文件读的offset设置为0
 		newFile.Seek(0, 0)
 		filemeta.FileSha1 = util.FileSha1(newFile)
-		meta.UpdateFileMeta(filemeta)
+		//meta.UpdateFileMeta(filemeta)
+		_ = meta.UpdateFileMetaDb(filemeta)
 		// sha1操作中有io.Copy() 所以将下次文件读的offset设置为0
 		newFile.Seek(0, 0)
 		if err != nil {
@@ -77,7 +78,13 @@ func GetFileMetaHandler(w http.ResponseWriter, r *http.Request) {
 	// value =  r.Form["filehash"][0]
 	// 个人觉得r.FormValue() 更好用
 	value := r.FormValue("filehash")
-	fileMeta := meta.GetFileMeta(value)
+	//fileMeta := meta.GetFileMeta(value)
+	fileMeta, err := meta.GetFileMetaDB(value)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	marshal, err := json.Marshal(fileMeta)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

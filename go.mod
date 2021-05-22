@@ -2,4 +2,4 @@ module github.com/chuanshan/file-server
 
 go 1.16
 
-require github.com/chuanshanjun/file-server v0.0.0-20210518111220-219b236edbd4 // indirect
+require github.com/go-sql-driver/mysql v1.6.0

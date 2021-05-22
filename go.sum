@@ -1,2 +1,2 @@
-github.com/chuanshanjun/file-server v0.0.0-20210518111220-219b236edbd4 h1:MD11YruLP6HNc/wi8jAbOclEuhFAd7fgT1KnxiLvUDE=
-github.com/chuanshanjun/file-server v0.0.0-20210518111220-219b236edbd4/go.mod h1:Xstya7i7UToNB4FfyCFqnEWViISsh5TKoLAuHCgmLuo=
+github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=
+github.com/go-sql-driver/mysql v1.6.0/go.mod h1:DCzpHaOWr8IXmIStZouvnhqoel9Qv2LBy8hT2VhHyBg=
