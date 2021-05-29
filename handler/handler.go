@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	dblayer "github.com/chuanshan/file-server/db"
 	"github.com/chuanshan/file-server/meta"
 	"github.com/chuanshan/file-server/util"
 	"io"
@@ -22,9 +23,10 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		io.WriteString(w, string(data))
+		return
 	}
 
-	// POST 获取问价内容
+	// POST 获取文件内容
 	if r.Method == http.MethodPost {
 		// index.html 使用form提交 name=file 所以此处key使用file
 		file, header, err := r.FormFile("file")
@@ -61,6 +63,11 @@ func UploadHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Printf("read file to []byte error:%s", err.Error())
 		}
+
+		//更新用户文件记录表
+		r.ParseForm()
+		username := r.Form.Get("username")
+		dblayer.OnUserFileUpLoadFinished(filemeta.FileSha1, filemeta.FileSize, filemeta.FileName, username)
 
 		// http 302 暂时性转移
 		http.Redirect(w, r, "/file/upload/suc", http.StatusFound)
