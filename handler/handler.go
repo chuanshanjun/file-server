@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -177,4 +178,24 @@ func DeleteFile(w http.ResponseWriter, r *http.Request) {
 	os.Remove(fileMeta.Location)
 
 	w.WriteHeader(http.StatusOK)
+}
+
+// 查询用户文件
+func FileQueryHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	username := r.Form.Get("username")
+	limit, _ := strconv.Atoi(r.Form.Get("limit"))
+
+	files, err := dblayer.QueryUserFileMetas(username, limit)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+
+	resp := util.RespMsg{
+		Code: 200,
+		Msg:  "success",
+		Data: files,
+	}
+	w.Write(resp.JSONBytes())
 }
