@@ -8,6 +8,7 @@ import (
 	"github.com/chuanshan/file-server/util"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -198,4 +199,36 @@ func FileQueryHandler(w http.ResponseWriter, r *http.Request) {
 		Data: files,
 	}
 	w.Write(resp.JSONBytes())
+}
+
+// 尝试秒传
+func TryFastUploadHandler(w http.ResponseWriter, r *http.Request) {
+	// 1 解析参数
+	r.ParseForm()
+
+	filehash := r.Form.Get("filehash")
+	username := r.Form.Get("username")
+	filesize, _ := strconv.Atoi(r.Form.Get("filesize"))
+	filename := r.Form.Get("filename")
+
+	// 2 从文件表中获取文件
+	file, err := dblayer.GetFileMetaDB(filehash)
+	if err != nil {
+		log.Fatalf("get file from db with filehash err:%v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// 3 如果文件不存在则直接返回
+	if file == nil {
+		resp := util.RespMsg{
+			Code: -1,
+			Msg:  "妙传失败，请访问普通上传接口",
+		}
+		w.Write(resp.JSONBytes())
+		return
+	}
+
+	// 4 如果文件存在则只写用户自己的表
+	dblayer.OnUserFileUpLoadFinished(filehash, int64(filesize), filename, username)
 }

@@ -56,3 +56,5 @@ CREATE TABLE `tbl_user_file` (
  KEY `idx_status` (`status`),
  KEY `idx_user_id` (`user_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--  UNIQUE KEY `idx_user_file` (`user_name`, `file_sha1`) 先删掉
