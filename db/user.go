@@ -112,7 +112,7 @@ type UserToken struct {
 func GetUserToken(username string) (UserToken, error) {
 	userToken := UserToken{}
 	stmt, err := mydb.DBConn().Prepare(
-		"select user_name, user_token from tbl_user_token where username = ? limit 1")
+		"select user_name, user_token from tbl_user_token where user_name = ? limit 1")
 	if err != nil {
 		log.Fatalf("get user token from tbl_user_token err:%v", err)
 		return userToken, err
