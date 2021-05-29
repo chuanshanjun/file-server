@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -107,4 +108,66 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Write(data)
 	}
+}
+
+func UserInfoHandler(w http.ResponseWriter, r *http.Request) {
+	// 1 解析请求参数
+	r.ParseForm()
+
+	username := r.Form.Get("username")
+	token := r.Form.Get("token")
+	// 2 验证token有效性
+	if ValidToken(username, token) {
+		w.Write([]byte("token is invalid"))
+		return
+	}
+	// 3 获取用户信息
+	user, err := dblayer.GetUserInfo(username)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+	// 4 组装参数返回
+	resp := util.RespMsg{
+		Code: 200,
+		Msg:  "success",
+		Data: user,
+	}
+	w.Write(resp.JSONBytes())
+}
+
+// ValidToken : 验证token
+func ValidToken(username string, token string) bool {
+	// 1 验证token长度
+	if len(token) != 40 {
+		return false
+	}
+
+	// 2 判断token实效性
+	suffix := token[len(token)-8:]
+	parseInt, err := strconv.ParseInt(suffix, 16, 64)
+	if err != nil {
+		log.Fatalf("Valid token failed err:%v", err)
+		return false
+	}
+
+	diff := time.Now().Unix() - parseInt
+	overtime := diff / 3600
+	if overtime > 1 {
+		log.Println("token invalid")
+		return false
+	}
+
+	// 3 从数据库表tbl_user_token查询username对应的token信息
+	userToken, err := dblayer.GetUserToken(username)
+	if err != nil {
+		log.Fatalf("get user token from DB error:%v", err)
+		return false
+	}
+
+	// 4 对比两个token是否一致
+	if !(token == userToken.UserToken) {
+		log.Println("frontEnd token not equals backEnd token")
+		return false
+	}
+	return true
 }

@@ -5,6 +5,15 @@ import (
 	"log"
 )
 
+type User struct {
+	Username     string
+	Email        string
+	Phone        string
+	SignupAt     string
+	LastActiveAt string
+	Status       int
+}
+
 func UserSignUP(username string, password string) bool {
 	stmt, err := mydb.DBConn().Prepare(
 		"insert ignore into tbl_user(`user_name`, `user_pwd`) values(?,?)")
@@ -73,4 +82,48 @@ func UpdateToken(username string, token string) bool {
 	}
 
 	return false
+}
+
+// GetUserInfo 查询用户信息
+func GetUserInfo(username string) (User, error) {
+	user := User{}
+	stmt, err := mydb.DBConn().Prepare(
+		"select user_name, signup_at from tbl_user where user_name = ? limit 1")
+	if err != nil {
+		log.Fatalf("GetUserInfo tbl_user error:%v", err)
+		return user, err
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(username).Scan(&user.Username, &user.SignupAt)
+	if err != nil {
+		log.Fatalf("GetUserInfo tbl_user error:%v", err)
+		return user, err
+	}
+	return user, nil
+}
+
+type UserToken struct {
+	Username  string
+	UserToken string
+}
+
+// 获取用户token
+func GetUserToken(username string) (UserToken, error) {
+	userToken := UserToken{}
+	stmt, err := mydb.DBConn().Prepare(
+		"select user_name, user_token from tbl_user_token where username = ? limit 1")
+	if err != nil {
+		log.Fatalf("get user token from tbl_user_token err:%v", err)
+		return userToken, err
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(username).Scan(&userToken.Username, &userToken.UserToken)
+	if err != nil {
+		log.Fatalf("get user token from tbl_user_token err:%v", err)
+		return userToken, err
+	}
+
+	return userToken, nil
 }

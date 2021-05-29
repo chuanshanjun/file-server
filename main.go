@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"net/http"
-
 	"github.com/chuanshan/file-server/handler"
+	"net/http"
 )
 
 // http://hu12340.vip/2020/10/GO-%E6%93%8D%E4%BD%9C%E6%96%87%E4%BB%B6/ go 操作文件
@@ -27,6 +26,7 @@ func main() {
 	http.HandleFunc("/user/signup", handler.SingUPHandler)
 	http.HandleFunc("/user/signin", handler.SignInHandler)
 	http.HandleFunc("/home", handler.HomeHandler)
+	http.HandleFunc("/user/info", handler.UserInfoHandler)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Printf("failed to start server, err:%s", err.Error())
