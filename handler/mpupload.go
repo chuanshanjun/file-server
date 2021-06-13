@@ -53,6 +53,12 @@ func InitialMultipartUploadHandler(w http.ResponseWriter, r *http.Request) {
 	rConn.Do("HSET", "MP_"+upInfo.UploadId, "filehash", upInfo.FileHash)
 	rConn.Do("HSET", "MP_"+upInfo.UploadId, "filesize", upInfo.FileSize)
 
+	chunkCountR, _ := rConn.Do("HGET", "MP_"+upInfo.UploadId, "chunkcount", upInfo.ChunkCount)
+	filehashR, _ := rConn.Do("HGET", "MP_"+upInfo.UploadId, "filehash", upInfo.FileHash)
+	fileziser, _ := rConn.Do("HGET", "MP_"+upInfo.UploadId, "filesize", upInfo.FileSize)
+
+	fmt.Printf("chunkCount:%d filehashR:%s fileziser:%d", chunkCountR, filehashR, fileziser)
+
 	// 5.将响应初始化信息返回客户端
 	w.Write(util.NewRespMsg(0, "OK", upInfo).JSONBytes())
 }

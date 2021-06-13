@@ -30,6 +30,9 @@ func main() {
 	http.HandleFunc("/file/query", handler.FileQueryHandler)
 	http.HandleFunc("/file/fastupload", handler.TryFastUploadHandler)
 	http.HandleFunc("/file/mpupload/init", handler.InitialMultipartUploadHandler)
+	http.HandleFunc("/file/word", handler.WordHandler)
+	http.HandleFunc("/onlyoffice/openfile", handler.OpenFile)
+	http.HandleFunc("/onlyoffice/download/testword.docx", handler.DownloadOnlyoffice)
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Printf("failed to start server, err:%s", err.Error())

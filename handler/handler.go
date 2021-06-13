@@ -232,3 +232,18 @@ func TryFastUploadHandler(w http.ResponseWriter, r *http.Request) {
 	// 4 如果文件存在则只写用户自己的表
 	dblayer.OnUserFileUpLoadFinished(filehash, int64(filesize), filename, username)
 }
+
+// 写出word
+func WordHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		w.Write([]byte("failed"))
+		return
+	}
+
+	file, err := ioutil.ReadFile("./tmp/testword.docx")
+	if err != nil {
+		log.Fatalf("read word file err:%v", err)
+	}
+
+	w.Write([]byte(file))
+}
