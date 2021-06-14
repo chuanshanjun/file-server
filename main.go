@@ -30,6 +30,8 @@ func main() {
 	http.HandleFunc("/file/query", handler.FileQueryHandler)
 	http.HandleFunc("/file/fastupload", handler.TryFastUploadHandler)
 	http.HandleFunc("/file/mpupload/init", handler.InitialMultipartUploadHandler)
+	http.HandleFunc("/file/mpupload/upload", handler.UploadPartHandler)
+	http.HandleFunc("/file/mpupload/completeUpload", handler.CompleteUploadHandler)
 	http.HandleFunc("/file/word", handler.WordHandler)
 	http.HandleFunc("/onlyoffice/openfile", handler.OpenFile)
 	http.HandleFunc("/onlyoffice/download/testword.docx", handler.DownloadOnlyoffice)
